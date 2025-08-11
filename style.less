@@ -1,0 +1,451 @@
+html {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    color: #323c4c;
+    font-family: 'Lato', sans-serif;
+}
+
+body {
+    margin: 4px;
+    padding: 0;
+    height: 100vh;
+    margin: 0 auto;
+    background: #dedcda;
+}
+
+body.no-print {
+    .pane-content {
+        padding: 0;
+    }
+}
+
+h1.header {
+    margin-top: 0;
+    background: #adc7e1;
+    white-space: nowrap;
+    width: 100%;
+    font-weight: lighter;
+    font-size: clamp(24px, 10vw, 48px);
+    border-bottom: 2px solid #193243;
+    
+    a {
+        color: black;
+        text-decoration: none;
+    }
+    
+    img {
+        height: 1em;
+        margin-bottom: -0.1em;
+    }
+}
+
+.content, .subtitle, .privacy {
+    margin: 0 0.5em;
+}
+
+.pane {
+    max-width: 800px;
+    margin: 2em auto;
+    box-shadow: 6px 4px 6px rgba(0, 0, 0, 0.2);
+    
+    .pane-title {
+        background: #323c4c;
+        color: white;
+        padding: 1em 0 0.8em 0.6em;
+
+        span.chevron {
+            float: right;
+            padding-right: 1.5em;
+        }
+        span.chevron::before {
+            content: '—';
+        }
+
+        span.chevron.collapsed::before {
+            content: '+';
+        }
+    }
+    
+    .pane-content {
+        background: #8dadc8;
+        padding: 0.6em 0;
+    }
+}
+
+.setup-pane > table.tile {
+    border: 1.5px solid black;
+}
+
+.setup-inputs {
+    display: flex;
+    width: 100%;
+    margin-top: 1em;
+
+    > * {
+        flex: 1;
+    }
+
+    > :nth-child(1) {
+        flex: 25%;
+    }
+
+    > :nth-child(2) {
+        flex: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    > :nth-child(3) {
+        flex: 25%;
+    }
+
+    .setup-input {
+        display: block;
+
+        .label {
+            font-weight: bold;
+            text-align: center;
+        }
+
+        select {
+            display: block;
+            margin: 0 auto;
+        }
+    }
+}
+
+@media (max-width: 600px) {
+    .setup-inputs {
+        flex-direction: column;
+
+        .setup-input {
+            margin-top: 0.5em;
+            width: 100%;
+            background: #adc7e1;
+
+            select {
+                width: 100%;
+            }
+        }
+    }
+}
+
+table.roster-table {
+    th {
+        background: #323c4c;
+        color: white;
+    }
+
+    td {
+        background: #8dadc8;
+
+        input.tail {
+            max-width: 5em;
+        }
+
+        input.qualification {
+            max-width: 10em;
+        }
+    }
+}
+
+table.tile {
+    margin: auto;
+    padding: 0;
+    background: white;
+    width: 100%;
+
+    &.preview {
+        td.left, td.right {
+            img {
+                max-width: 4vw;
+            }
+        }
+        
+        font-size: small;
+        border: none;
+    }
+
+    &.occupant {
+        td.left, td.right {
+            img {
+                max-width: 40px;
+            }
+        }
+    }
+
+    td.left {
+        text-align: right;
+    }
+
+    td.right {
+        text-align: left;
+    }
+
+    td.left, td.right {
+        img {
+            max-height: 70px;
+            max-width: 70px;
+        }
+
+        width: 70px;
+    }
+
+    td.middle {
+        font-family: sans-serif;
+        text-align: center;
+        width: 10em;
+    }
+}
+
+.lineup-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: minmax(30px, 1fr);
+    gap: 10px;
+    width: 100%;
+
+    &.c1 { grid-template-columns: repeat(1, 1fr); }
+    &.c2 { grid-template-columns: repeat(2, 1fr); }
+    &.c3 { grid-template-columns: repeat(3, 1fr); }
+    &.c4 { grid-template-columns: repeat(4, 1fr); }
+    &.c5 { grid-template-columns: repeat(5, 1fr); }
+
+    .lineup-cell {
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+
+        .lineup-cell-inner {
+            flex: 1;
+            display: flex;
+            width: 100%;
+            background: white;
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+            min-height: 30px;
+            border: 1.5px solid black;
+        }
+
+        .lineup-occupant {
+            display: flex;
+            width: 100%;
+            border: 1.5px solid grey;
+        }
+
+        .lineup-occupant-add {
+            display: flex;
+            width: 100%;
+            background: white;
+            justify-content: center;
+            border: 1.5px solid grey;
+        }
+
+        &.label-color-red { background: red; }
+        &.label-color-white { background: white; }
+        &.label-color-blue { background: blue; }
+        &.label-color-green { background: green; }
+        &.label-color-yellow { background: yellow; }
+    }
+
+    .lineup-label {
+        input.lineup-label-input {
+            text-align: center;
+            font-weight: bold;
+            height: 2em;
+        }
+    }
+    
+    .lineup-cell,.empty {
+        color: lightgrey;
+    }
+}
+
+body.no-print {
+    input.lineup-label-input {
+        border: none;
+        font-size: large;
+    }
+}
+
+.lineup-container.labels {
+    grid-template-rows: auto minmax(30px, 1fr) [row-start];
+
+    &.c1 { grid-template-columns: 2em repeat(1, 1fr); }
+    &.c2 { grid-template-columns: 2em repeat(2, 1fr); }
+    &.c3 { grid-template-columns: 2em repeat(3, 1fr); }
+    &.c4 { grid-template-columns: 2em repeat(4, 1fr); }
+    &.c5 { grid-template-columns: 2em repeat(5, 1fr); }
+}
+
+label {
+    display: block;
+}
+
+.modal-overlay {
+    display: none;
+}
+
+.modal-overlay.active {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .modal {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        width: 500px;
+        max-width: 100%;
+        height: 80%;
+        min-height: 500px;
+        position: relative;
+
+        input.modal-control {
+            display: block;
+            width: 100%;
+            padding: 1em;
+            margin-top: 1em;
+        }
+    }
+}
+
+.canvas {
+    display: none;
+}
+
+.plane-pick {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    overflow: hidden;
+
+    .close-button {
+        button {
+            display: block;
+            float: right;
+            margin-top: 10px;
+            margin-right: 20px;
+        }
+    }
+
+    .plane-selected {
+        flex-shrink: 0;
+        padding-right: 16px; box-sizing: border-box;
+    }
+
+    .plane-all {
+        flex-grow: 1;
+        overflow-y: auto;
+    }
+
+    ul {
+        list-style: none;
+
+        li {
+            padding: 0.5em;
+
+            table {
+                border: 1.5px solid black;
+                cursor: pointer;
+            }
+        }
+    }
+
+    .search-text {
+        flex-shrink: 0;
+        text-align: center;
+
+        input[type="text"] {
+            width: 75%;
+            font-size: 16pt;
+        }
+    }
+}
+
+.share {
+    .close-button {
+        button {
+            display: block;
+            float: right;
+            margin-top: 10px;
+            margin-right: 20px;
+        }
+    }
+
+    h3 {
+        clear: both;
+    }
+
+    .text {
+        flex-shrink: 0;
+        text-align: center;
+
+        input[type="text"] {
+            width: 75%;
+            font-size: 16pt;
+        }
+        button {
+            font-size: 16pt;
+        }
+    }
+}
+
+input.flash {
+    background: yellow;
+}
+
+.print-body-styles() {
+    background: white;
+}
+
+.print-styles() {
+    .no-print {
+        display: none !important;
+    }
+    
+    .pane {
+        box-shadow: none;
+    }
+
+    .pane-content {
+        background: white;
+    }
+
+    .lineup-cell.empty {
+        color: transparent;
+        border: none;
+
+        .lineup-cell-inner {
+            border: none;
+        }
+    }
+}
+
+@media print {
+    body {
+        .print-body-styles();
+    }
+
+    .print-styles();
+}
+
+body.no-print {
+    .print-body-styles();
+    .print-styles();
+}
+
+@media screen and (max-width: 600px) {
+    .roster-pane, .lineup-container {
+        overflow-x: auto;
+    }
+}
