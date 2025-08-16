@@ -1,5 +1,5 @@
 import React from 'react';
-import { Ship, Setup, FormatShip, isValidIconFilename } from './types';
+import { Ship, Setup, FormatShip, isValidIconFilename } from '../types';
 
 interface TileProps {
     ship: Ship;

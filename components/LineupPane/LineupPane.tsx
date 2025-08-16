@@ -1,6 +1,6 @@
 import React from 'react';
-import { FormattedShip, Grid, Setup } from './types';
-import Tile from './Tile';
+import { FormattedShip, Grid, Setup } from '../../types';
+import Tile from '../Tile';
 
 interface LineupProps {
     setup: Setup;

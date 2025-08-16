@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import Modal from './Modal.tsx';
-import { Ship, CanonicalTypes, CanonicalQualifications, CanonicalSquadrons } from './types';
+import Modal from '../Modal.tsx';
+import { Ship, CanonicalTypes, CanonicalQualifications, CanonicalSquadrons } from '../../types';
 import { generateCsv, parseCsvRoster, addEmptyRow, hasEmptyRow } from './rosterTools';
 
 interface RosterPaneProps {

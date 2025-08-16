@@ -1,6 +1,6 @@
 import React from 'react';
-import { Setup, Ship } from './types';
-import Tile from './Tile';
+import { Setup, Ship } from '../../types';
+import Tile from '../Tile';
 
 interface SetupPaneProps {
     setup: Setup;
