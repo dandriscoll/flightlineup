@@ -9,9 +9,39 @@ interface LineupProps {
     rows: number;
     cols: number;
     handleClick: (grid: Grid, seat: number) => void;
+    onMoveCells: (from: Grid, to: Grid) => void;
 }
 
-const LineupPane: React.FC<LineupProps> = ({ setup, setSetup, ships, rows, cols, handleClick }) => {
+
+const LineupPane: React.FC<LineupProps> = ({ setup, setSetup, ships, rows, cols, handleClick, onMoveCells }) => {
+
+    // Helper: Is there a primary ship at row/col?
+
+    const getPrimaryAt = (row: number, col: number) =>
+        ships.find(s => s.row === row && s.col === col && s.seat === null || s.seat === 0);
+
+    const onDragStart = (e: React.DragEvent, from: Grid) => {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('application/json', JSON.stringify(from));
+    }
+
+    const onDragOver = (e: React.DragEvent) => {
+        // must preventDefault to allow dropping
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    };
+
+    const onDrop = (e: React.DragEvent, to: Grid) => {
+        e.preventDefault();
+        try {
+            const raw = e.dataTransfer.getData('application/json');
+            if (!raw) return;
+            const from: Grid = JSON.parse(raw);
+            if (from.row === to.row && from.col === to.col) return; // no move
+            onMoveCells(from, to);
+        } catch{}
+    };
+
     const handleColumnLabel = (e: React.ChangeEvent<HTMLInputElement>, column: number) => {
         const newColumnLabels = [...setup.columnLabels];
         newColumnLabels[column] = e.target.value;
@@ -28,20 +58,20 @@ const LineupPane: React.FC<LineupProps> = ({ setup, setSetup, ships, rows, cols,
         <div className={`lineup-container c${cols} ${setup.labels ? 'labels' : ''}`}>
             {setup.labels && (
                 <>
-                <div className='linup-cell'>
-                </div>
-                {Array.from({ length: cols }, (_, col) => (
-                    <div key={`label-${col}`} className='lineup-cell lineup-label'>
-                        <input
-                            type='text'
-                            value={setup.columnLabels[col]}
-                            onChange={(e) => handleColumnLabel(e, col)}
-                            aria-label={`Label for column ${col}`}
-                            placeholder='Column label'
-                            className='lineup-label-input'
-                        />
+                    <div className='linup-cell'>
                     </div>
-                ))}
+                    {Array.from({ length: cols }, (_, col) => (
+                        <div key={`label-${col}`} className='lineup-cell lineup-label'>
+                            <input
+                                type='text'
+                                value={setup.columnLabels[col]}
+                                onChange={(e) => handleColumnLabel(e, col)}
+                                aria-label={`Label for column ${col}`}
+                                placeholder='Column label'
+                                className='lineup-label-input'
+                            />
+                        </div>
+                    ))}
                 </>
             )}
 
@@ -70,7 +100,7 @@ const LineupPane: React.FC<LineupProps> = ({ setup, setSetup, ships, rows, cols,
                                         colorPicker.style.backgroundColor = 'white';
                                         colorPicker.style.border = '1px solid black';
                                         colorPicker.style.borderRadius = '5px';
-                                        
+
                                         colors.forEach(color => {
                                             const option = document.createElement('div');
                                             option.style.width = '20px';
@@ -103,23 +133,37 @@ const LineupPane: React.FC<LineupProps> = ({ setup, setSetup, ships, rows, cols,
                             const occupants = ships.filter(s => s.row === row && s.col === col && s.seat >= 1);
                             const grid: Grid = { row, col, seat: null };
 
+                            // Make the cell drop a target regardless of contexts
+                            const dropHandlers = {
+                                onDragOver,
+                                onDrop: (e: React.DragEvent) => onDrop(e, grid),
+                            };
+
                             if (!ship) {
                                 return (
-                                    <div key={`${row}-${col}`} className='lineup-cell empty' onClick={() => handleClick(grid)}>
+                                    <div key={`${row}-${col}`} className='lineup-cell empty' {...dropHandlers} onClick={() => handleClick(grid)}>
                                         <div className='lineup-cell-inner'>
-                                        Click to set
+                                            Click to set
                                         </div>
                                     </div>
                                 );
                             }
 
+                            // draggable source + droppable target (for swap)
+                            const primary = getPrimaryAt(row, col);
+                            const draggableProps = primary ? {
+                                draggable: true,
+                                onDragStart: (e: React.DragEvent) => onDragStart(e, grid),
+                                onDragOver,
+                            } : {};
+
                             if (setup.occupants) {
                                 return (
-                                    <div key={`${row}-${col}`} className='lineup-cell'>
-                                        <div className='lineup-cell-inner'  onClick={() => handleClick(grid)} >
+                                    <div key={`${row}-${col}`} className='lineup-cell' {...dropHandlers}>
+                                        <div className='lineup-cell-inner' onClick={() => handleClick(grid)} {...draggableProps} >
                                             <Tile setup={setup} ship={ship} />
                                         </div>
-                                        {occupants && [1,2,3].slice(0, occupants.length).map((seat) => {
+                                        {occupants && [1, 2, 3].slice(0, occupants.length).map((seat) => {
                                             const occupant = occupants.find(o => o.seat === seat);
                                             return occupant && (
                                                 <div key={seat} className='lineup-occupant' onClick={() => handleClick({ ...grid, seat: seat })} >
@@ -128,22 +172,23 @@ const LineupPane: React.FC<LineupProps> = ({ setup, setSetup, ships, rows, cols,
                                             );
                                         })}
                                         {occupants && occupants.length <= 3 && (
-                                            <div className='lineup-occupant-add no-print' onClick={() => handleClick({ ...grid, seat: (occupants?.length ?? 0) + 1})}>Add occupant</div>
+                                            <div className='lineup-occupant-add no-print' onClick={() => handleClick({ ...grid, seat: (occupants?.length ?? 0) + 1 })}>Add occupant</div>
                                         )}
                                     </div>
                                 );
                             } else {
                                 return (
-                                    <div key={`${row}-${col}`} className='lineup-cell'>
-                                        <div className='lineup-cell-inner' onClick={() => handleClick(grid)} >
-                                            <Tile setup={setup} ship={ship}/>
+                                    <div key={`${row}-${col}`} className='lineup-cell' {...dropHandlers}>
+                                        <div className='lineup-cell-inner' onClick={() => handleClick(grid)} {...draggableProps} >
+                                            <Tile setup={setup} ship={ship} />
                                         </div>
                                     </div>
                                 );
                             }
                         })}
                     </React.Fragment>
-                )}
+                )
+            }
             )}
         </div>
     );

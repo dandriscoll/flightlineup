@@ -1,14 +1,15 @@
 ﻿import React, { useState, useEffect } from 'react';
-import Pane from './Pane';
-import SetupPane from './SetupPane';
-import RosterPane from './RosterPane';
-import LineupPane from './LineupPane';
-import Modal from './Modal';
-import PlanePicker from './PlanePicker';
-import Share from './Share';
-import { Ship, Grid, Setup, SetupDefaults } from './types';
+import Pane from '../components/Pane/Pane';
+import SetupPane from '../components/SetupPane/SetupPane';
+import RosterPane from '../components/RosterPane/RosterPane';
+import LineupPane from '../components/LineupPane/LineupPane';
+import Modal from '../components/Modal';
+import PlanePicker from '../components/LineupPane/PlanePicker';
+import Share from '../components/LineupPane/Share';
+import { Ship, Grid, Setup, SetupDefaults, FormattedShip } from '../types';
 import html2canvas from 'html2canvas';
-import { cleanupShips, hasEmptyRow } from './rosterTools';
+import { cleanupShips, hasEmptyRow } from '../components/RosterPane/rosterTools';
+import { moveOrSwapCells } from '../components/LineupPane/moveOrSwapCells';
 
 const App = () => {
     const [setup, setSetup] = useState<Setup>(SetupDefaults);
@@ -82,6 +83,11 @@ const App = () => {
             setRows(rows + 1);
         }
     }
+
+    const handleMoveCells = (from: Grid, to: Grid) => {
+        setShips(prev => moveOrSwapCells(prev, from, to));
+    };
+
 
     const resizeLabelArrays = () => {
         const newColumnLabels = [...setup.columnLabels];
@@ -181,7 +187,7 @@ const App = () => {
         } else if (ships.length === 1 && hasEmptyRow(ships)) {
             return;
         }
-        
+
         const slottedShips = ships.filter(ship => ship.row !== null && ship.col !== null && ship.row !== undefined && ship.col !== undefined);
         const maxRow = slottedShips.reduce((max, ship) => Math.max(max, ship.row), 0);
         const maxCol = slottedShips.reduce((max, ship) => Math.max(max, ship.col), 0);
@@ -222,7 +228,7 @@ const App = () => {
         } catch (error) {
             setSetup({ ...SetupDefaults, isDefault: false });
         }
-        
+
         const storedShips = localStorage.getItem('ships');
         if (storedShips) {
             const roster = JSON.parse(storedShips);
@@ -232,10 +238,10 @@ const App = () => {
             }
         }
     }, []);
-    
+
     return (
         <>
-            <h1 className='header'>FlightLineup.com <img src='flight_lineup.png' alt='Flight Lineup logo' /></h1>
+            <h1 className='header'>FlightLineup.com <img src='/assets/images/flight_lineup.png' alt='Flight Lineup logo' /></h1>
             <div className='subtitle no-print'><b>Build a visual lineup of your formation flight.</b> Make it cool and professional. Be the envy of your friends.</div>
 
             <div className='content'>
@@ -262,7 +268,7 @@ const App = () => {
                             <input type='button' value='No' className='modal-control' onClick={() => setClearModalOpen(false)} />
                         </div>
                     </Modal>
-                    <LineupPane setup={setup} setSetup={setSetup} ships={ships} rows={rows} cols={cols} handleClick={handleLineupClick} />
+                    <LineupPane setup={setup} setSetup={setSetup} ships={ships} rows={rows} cols={cols} handleClick={handleLineupClick} onMoveCells={handleMoveCells} />
 
                     <form>
                         <input type='button' className='no-print' value='Download PNG' onClick={() => capturePng()} />
