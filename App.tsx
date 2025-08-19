@@ -6,7 +6,7 @@ import LineupPane from '../components/LineupPane/LineupPane';
 import Modal from '../components/Modal';
 import PlanePicker from '../components/LineupPane/PlanePicker';
 import Share from '../components/LineupPane/Share';
-import { Ship, Grid, Setup, SetupDefaults, FormattedShip } from '../types';
+import { Ship, Grid, Setup, SetupDefaults } from '../types';
 import html2canvas from 'html2canvas';
 import { cleanupShips, hasEmptyRow } from '../components/RosterPane/rosterTools';
 import { moveOrSwapCells } from '../components/LineupPane/moveOrSwapCells';
