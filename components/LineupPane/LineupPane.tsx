@@ -15,8 +15,7 @@ interface LineupProps {
 
 const LineupPane: React.FC<LineupProps> = ({ setup, setSetup, ships, rows, cols, handleClick, onMoveCells }) => {
 
-    // Helper: Is there a primary ship at row/col?
-
+    // getPrimaryAt is a helper function that returns true if a primary ship is present at the given row/col
     const getPrimaryAt = (row: number, col: number) =>
         ships.find(s => s.row === row && s.col === col && s.seat === null || s.seat === 0);
 

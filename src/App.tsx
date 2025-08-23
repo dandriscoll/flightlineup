@@ -88,7 +88,6 @@ const App = () => {
         setShips(prev => moveOrSwapCells(prev, from, to));
     };
 
-
     const resizeLabelArrays = () => {
         const newColumnLabels = [...setup.columnLabels];
         const newRowLabels = [...setup.rowLabels];
