@@ -208,3 +208,9 @@ dandriscollphoto/projects/county_line/maps/*.png
 dandriscollphoto/projects/county_line/thumbs/*.jpg
 dandriscollphoto/projects/county_line/thumbs/rename.cmd
 dandriscollphoto/projects/portraiture_in_public_service/images/*.jpg
+
+# Frontend build artifacts
+index.css
+index.css.map
+index.js
+index.js.map

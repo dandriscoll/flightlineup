@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Ship, Grid, Setup } from './types';
-import Tile from './Tile';
+import { Ship, Grid, Setup } from '../../types';
+import Tile from '../Tile';
 
 interface PlanePickerProps {
     setup: Setup;

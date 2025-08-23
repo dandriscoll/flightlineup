@@ -1,4 +1,4 @@
-import { FormattedShip, Ship } from './types';
+import { FormattedShip, Ship } from '../../types';
 
 const parseCsvRow = (row: string): string[] => {
     const values: string[] = [];
