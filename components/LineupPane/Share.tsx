@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Ship, Setup } from './types';
+import { Ship, Setup } from '../../types';
 
 interface ShareProps {
     setup: Setup;

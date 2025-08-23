@@ -241,7 +241,7 @@ const App = () => {
 
     return (
         <>
-            <h1 className='header'>FlightLineup.com <img src='/assets/images/flight_lineup.png' alt='Flight Lineup logo' /></h1>
+            <h1 className='header'>FlightLineup.com <img src='assets/images/flight_lineup.png' alt='Flight Lineup logo' /></h1>
             <div className='subtitle no-print'><b>Build a visual lineup of your formation flight.</b> Make it cool and professional. Be the envy of your friends.</div>
 
             <div className='content'>
