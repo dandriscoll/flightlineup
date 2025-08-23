@@ -9,7 +9,8 @@ import Share from '../components/LineupPane/Share';
 import { Ship, Grid, Setup, SetupDefaults } from '../types';
 import html2canvas from 'html2canvas';
 import { cleanupShips, hasEmptyRow } from '../components/RosterPane/rosterTools';
-import { moveOrSwapCells } from '../components/LineupPane/moveOrSwapCells';
+import { moveOrSwapCells } from '../components/LineupPane/utils/moveOrSwapCells';
+import { moveOrSwapRows } from '../components/LineupPane/utils/moveOrSwapRows';
 
 const App = () => {
     const [setup, setSetup] = useState<Setup>(SetupDefaults);
@@ -88,6 +89,14 @@ const App = () => {
         setShips(prev => moveOrSwapCells(prev, from, to));
     };
 
+<<<<<<< HEAD
+=======
+    const handleMoveRows = (fromRow: number, toRow: number) => {
+        setShips(prev => moveOrSwapRows(prev, fromRow, toRow));
+        setSetup(prev => moveOrSwapRows(prev, fromRow, toRow));
+    };
+
+>>>>>>> 8fb0999 (feature: add moving/swapping rows of tiles in lineup)
     const resizeLabelArrays = () => {
         const newColumnLabels = [...setup.columnLabels];
         const newRowLabels = [...setup.rowLabels];
@@ -267,7 +276,7 @@ const App = () => {
                             <input type='button' value='No' className='modal-control' onClick={() => setClearModalOpen(false)} />
                         </div>
                     </Modal>
-                    <LineupPane setup={setup} setSetup={setSetup} ships={ships} rows={rows} cols={cols} handleClick={handleLineupClick} onMoveCells={handleMoveCells} />
+                    <LineupPane setup={setup} setSetup={setSetup} ships={ships} rows={rows} cols={cols} handleClick={handleLineupClick} onMoveCells={handleMoveCells} onMoveRows={handleMoveRows} />
 
                     <form>
                         <input type='button' className='no-print' value='Download PNG' onClick={() => capturePng()} />
