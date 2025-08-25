@@ -9,6 +9,7 @@ import Share from '../components/LineupPane/Share';
 import { Ship, Grid, Setup, SetupDefaults } from '../types';
 import html2canvas from 'html2canvas';
 import { cleanupShips, hasEmptyRow } from '../components/RosterPane/rosterTools';
+import { moveOrSwapCells } from '../components/LineupPane/moveOrSwapCells';
 
 const App = () => {
     const [setup, setSetup] = useState<Setup>(SetupDefaults);
@@ -82,6 +83,10 @@ const App = () => {
             setRows(rows + 1);
         }
     }
+
+    const handleMoveCells = (from: Grid, to: Grid) => {
+        setShips(prev => moveOrSwapCells(prev, from, to));
+    };
 
     const resizeLabelArrays = () => {
         const newColumnLabels = [...setup.columnLabels];
@@ -181,7 +186,7 @@ const App = () => {
         } else if (ships.length === 1 && hasEmptyRow(ships)) {
             return;
         }
-        
+
         const slottedShips = ships.filter(ship => ship.row !== null && ship.col !== null && ship.row !== undefined && ship.col !== undefined);
         const maxRow = slottedShips.reduce((max, ship) => Math.max(max, ship.row), 0);
         const maxCol = slottedShips.reduce((max, ship) => Math.max(max, ship.col), 0);
@@ -222,7 +227,7 @@ const App = () => {
         } catch (error) {
             setSetup({ ...SetupDefaults, isDefault: false });
         }
-        
+
         const storedShips = localStorage.getItem('ships');
         if (storedShips) {
             const roster = JSON.parse(storedShips);
@@ -232,7 +237,7 @@ const App = () => {
             }
         }
     }, []);
-    
+
     return (
         <>
             <h1 className='header'>FlightLineup.com <img src='assets/images/flight_lineup.png' alt='Flight Lineup logo' /></h1>
@@ -262,7 +267,7 @@ const App = () => {
                             <input type='button' value='No' className='modal-control' onClick={() => setClearModalOpen(false)} />
                         </div>
                     </Modal>
-                    <LineupPane setup={setup} setSetup={setSetup} ships={ships} rows={rows} cols={cols} handleClick={handleLineupClick} />
+                    <LineupPane setup={setup} setSetup={setSetup} ships={ships} rows={rows} cols={cols} handleClick={handleLineupClick} onMoveCells={handleMoveCells} />
 
                     <form>
                         <input type='button' className='no-print' value='Download PNG' onClick={() => capturePng()} />
