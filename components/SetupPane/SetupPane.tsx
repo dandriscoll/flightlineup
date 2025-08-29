@@ -9,8 +9,8 @@ interface SetupPaneProps {
 
 const SetupPane: React.FC<SetupPaneProps> = ({ setup, setSetup }) => {
     const exampleShip: Ship = {
-        name: 'Dan "Clippy" Driscoll',
-        tail: 'N9157S',
+        name: 'Example Name',
+        tail: 'N12345',
         type: 'Mooney M20M TLS Bravo',
         qualification: 'Safety Observer',
         squadron: 'Rocky Mountain',
