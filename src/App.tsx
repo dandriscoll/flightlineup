@@ -254,12 +254,11 @@ const App = () => {
                     <RosterPane ships={ships} setShips={setShips} setAllShips={setAllShips} />
                 </Pane>
 
-                <Pane title='Setup'>
-                    <SetupPane setup={setup} setSetup={setSetup} />
-                </Pane>
-
                 <Pane title='Lineup'>
-                    <form className='no-print'>
+
+                    <SetupPane setup={setup} setSetup={setSetup} />
+
+                    <form className='no-print' style={{ marginTop: '0.5em' }}>
                         <input type='button' value='Add column (left)' onClick={addColLeft} disabled={cols >= 5} />
                         <input type='button' value='Add row' onClick={addRow} disabled={rows >= 50} />
                         <input type='button' value='Add column (right)' onClick={addColRight} disabled={cols >= 5} />
