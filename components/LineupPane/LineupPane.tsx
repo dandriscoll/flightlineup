@@ -123,8 +123,15 @@ const LineupPane: React.FC<LineupProps> = ({ setup, setSetup, ships, rows, cols,
                                         tabIndex={-1}
                                         className="color-button no-print"
                                         onClick={(e) => {
+                                            // remove any existing color picker
+                                            const existing = document.getElementById("color-picker-row-" + row);
+                                            if (existing) {
+                                                document.body.removeChild(existing);
+                                                return; //toggle close
+                                            }
                                             const colors = ['red', 'white', 'blue', 'green', 'yellow'];
                                             const colorPicker = document.createElement('div');
+                                            colorPicker.id = 'color-picker-row-' + row;
                                             colorPicker.style.position = 'absolute';
                                             colorPicker.style.display = 'flex';
                                             colorPicker.style.gap = '5px';
@@ -132,6 +139,12 @@ const LineupPane: React.FC<LineupProps> = ({ setup, setSetup, ships, rows, cols,
                                             colorPicker.style.backgroundColor = 'white';
                                             colorPicker.style.border = '1px solid black';
                                             colorPicker.style.borderRadius = '5px';
+                                            colorPicker.style.top = `${e.pageY + 20}px`;
+                                            colorPicker.style.left = `${e.pageX}px`;
+                                            colorPicker.style.zIndex = '9999';
+
+                                            // prevent clicks inside from bubbling
+                                            colorPicker.addEventListener('click', ev => ev.stopPropagation());
 
                                             colors.forEach(color => {
                                                 const option = document.createElement('div');
@@ -140,19 +153,16 @@ const LineupPane: React.FC<LineupProps> = ({ setup, setSetup, ships, rows, cols,
                                                 option.style.backgroundColor = color;
                                                 option.style.cursor = 'pointer';
                                                 option.onclick = () => {
-                                                    if (setup.rowLabelColors[row] == color) {
-                                                        color = ''
-                                                    }
-                                                    const newRowLabelColors = [...setup.rowLabelColors];
-                                                    newRowLabelColors[row] = color;
-                                                    setSetup({ ...setup, rowLabelColors: newRowLabelColors });
+                                                    setSetup(prev => {
+                                                        const newRowLabelColors = [...prev.rowLabelColors];
+                                                        newRowLabelColors[row] =
+                                                            newRowLabelColors[row] === color ? '' : color;
+                                                        return { ...prev, rowLabelColors: newRowLabelColors };
+                                                    });
                                                     document.body.removeChild(colorPicker);
                                                 };
                                                 colorPicker.appendChild(option);
                                             });
-
-                                            colorPicker.style.top = `${e.pageY + 20}px`;
-                                            colorPicker.style.left = `${e.pageX}px`;
                                             document.body.appendChild(colorPicker);
                                         }}
                                     >
