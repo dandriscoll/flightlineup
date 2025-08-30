@@ -1,4 +1,4 @@
-import { FormattedShip, Grid } from "../../types";
+import { FormattedShip, Grid } from "../../../types";
 
 // Move entire cell group from -> to. If to has ships, swap groups.
 export const moveOrSwapCells = (

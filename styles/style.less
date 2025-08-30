@@ -274,11 +274,38 @@ body.no-print {
 .lineup-container.labels {
     grid-template-rows: auto minmax(30px, 1fr) [row-start];
 
-    &.c1 { grid-template-columns: 2em repeat(1, 1fr); }
-    &.c2 { grid-template-columns: 2em repeat(2, 1fr); }
-    &.c3 { grid-template-columns: 2em repeat(3, 1fr); }
-    &.c4 { grid-template-columns: 2em repeat(4, 1fr); }
-    &.c5 { grid-template-columns: 2em repeat(5, 1fr); }
+    &.c1 { grid-template-columns: 1.6em repeat(1, 1fr); }
+    &.c2 { grid-template-columns: 1.6em repeat(2, 1fr); }
+    &.c3 { grid-template-columns: 1.6em repeat(3, 1fr); }
+    &.c4 { grid-template-columns: 1.6em repeat(4, 1fr); }
+    &.c5 { grid-template-columns: 1.6em repeat(5, 1fr); }
+}
+
+.lineup-container.has-row-handle {
+    &.c1 { grid-template-columns: 1.6em repeat(1, 1fr); }
+    &.c2 { grid-template-columns: 1.6em repeat(2, 1fr); }
+    &.c3 { grid-template-columns: 1.6em repeat(3, 1fr); }
+    &.c4 { grid-template-columns: 1.6em repeat(4, 1fr); }
+    &.c5 { grid-template-columns: 1.6em repeat(5, 1fr); }
+}
+
+.drag-handle {
+    display: inline-block;
+    color: rgb(114, 113, 113);
+    cursor: grab;
+    user-select: none;
+    margin: 5px 5px;
+    padding: 4px 1px;
+    font-size: 1em;
+    border-radius: 4px;
+    transition: background 0.2s;
+    &:hover {
+        background: #e0e7ef;
+    }
+    &:active {
+        cursor: grabbing;
+        background: #adc7e1;
+    }
 }
 
 label {
