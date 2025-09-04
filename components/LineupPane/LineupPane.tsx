@@ -10,10 +10,11 @@ interface LineupProps {
     cols: number;
     handleClick: (grid: Grid, seat: number) => void;
     onMoveCells: (from: Grid, to: Grid) => void;
+    onMoveRows: (fromRow: number, toRow: number) => void;
 }
 
 
-const LineupPane: React.FC<LineupProps> = ({ setup, setSetup, ships, rows, cols, handleClick, onMoveCells }) => {
+const LineupPane: React.FC<LineupProps> = ({ setup, setSetup, ships, rows, cols, handleClick, onMoveCells, onMoveRows }) => {
 
     // getPrimaryAt is a helper function that returns true if a primary ship is present at the given row/col
     const getPrimaryAt = (row: number, col: number) =>
@@ -38,7 +39,27 @@ const LineupPane: React.FC<LineupProps> = ({ setup, setSetup, ships, rows, cols,
             const from: Grid = JSON.parse(raw);
             if (from.row === to.row && from.col === to.col) return; // no move
             onMoveCells(from, to);
-        } catch{}
+        } catch { }
+    };
+
+
+    const onRowDragStart = (e: React.DragEvent, fromRow: number) => {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('application/x-row', String(fromRow));
+    };
+
+    const onRowDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    };
+
+    const onRowDrop = (e: React.DragEvent, toRow: number) => {
+        e.preventDefault();
+        const raw = e.dataTransfer.getData('application/x-row');
+        if (raw === '') return;
+        const fromRow = Number(raw);
+        if (Number.isNaN(fromRow) || fromRow === toRow) return; // no move
+        onMoveRows(fromRow, toRow);
     };
 
     const handleColumnLabel = (e: React.ChangeEvent<HTMLInputElement>, column: number) => {
@@ -54,16 +75,16 @@ const LineupPane: React.FC<LineupProps> = ({ setup, setSetup, ships, rows, cols,
     };
 
     return (
-        <div className={`lineup-container c${cols} ${setup.labels ? 'labels' : ''}`}>
+        <div className={`lineup-container c${cols} ${setup.labels ? 'labels' : 'has-row-handle'}`}>
             {setup.labels && (
                 <>
-                    <div className='linup-cell'>
+                    <div className='lineup-cell'>
                     </div>
                     {Array.from({ length: cols }, (_, col) => (
                         <div key={`label-${col}`} className='lineup-cell lineup-label'>
                             <input
                                 type='text'
-                                value={setup.columnLabels[col]}
+                                value={setup.columnLabels[col] ?? ""}
                                 onChange={(e) => handleColumnLabel(e, col)}
                                 aria-label={`Label for column ${col}`}
                                 placeholder='Column label'
@@ -77,56 +98,79 @@ const LineupPane: React.FC<LineupProps> = ({ setup, setSetup, ships, rows, cols,
             {Array.from({ length: rows }, (_, row) => {
                 return (
                     <React.Fragment key={`row-${row}`}>
-                        {setup.labels && (
-                            <div className={`lineup-cell lineup-label ${setup.rowLabelColors[row] ? `label-color-${setup.rowLabelColors[row]}` : ''}`}>
-                                <input
-                                    type='text'
-                                    value={setup.rowLabels[row]}
-                                    onChange={(e) => handleRowLabel(e, row)}
-                                    aria-label={`Label for row ${row}`}
-                                    className='lineup-label-input'
-                                />
-                                <button
-                                    tabIndex={-1}
-                                    className="color-button no-print"
-                                    onClick={(e) => {
-                                        const colors = ['red', 'white', 'blue', 'green', 'yellow'];
-                                        const colorPicker = document.createElement('div');
-                                        colorPicker.style.position = 'absolute';
-                                        colorPicker.style.display = 'flex';
-                                        colorPicker.style.gap = '5px';
-                                        colorPicker.style.padding = '5px';
-                                        colorPicker.style.backgroundColor = 'white';
-                                        colorPicker.style.border = '1px solid black';
-                                        colorPicker.style.borderRadius = '5px';
+                        <div className={`lineup-cell lineup-label ${setup.rowLabelColors[row] ? `label-color-${setup.rowLabelColors[row]}` : ''}`}
+                            onDragOver={onRowDragOver}
+                            onDrop={(e) => { onRowDrop(e, row) }}
+                        >
+                            <span
+                                className="drag-handle"
+                                onClick={(e) => e.stopPropagation()} // don’t trigger label click
+                                draggable
+                                onDragStart={(e) => onRowDragStart(e, row)}
+                            >
+                                ⋮⋮
+                            </span>
+                            {setup.labels && (
+                                <>
+                                    <input
+                                        type='text'
+                                        value={setup.rowLabels[row] ?? ""}
+                                        onChange={(e) => handleRowLabel(e, row)}
+                                        aria-label={`Label for row ${row}`}
+                                        className='lineup-label-input'
+                                    />
+                                    <button
+                                        tabIndex={-1}
+                                        className="color-button no-print"
+                                        onClick={(e) => {
+                                            // remove any existing color picker
+                                            const existing = document.getElementById("color-picker-row-" + row);
+                                            if (existing) {
+                                                document.body.removeChild(existing);
+                                                return; //toggle close
+                                            }
+                                            const colors = ['red', 'white', 'blue', 'green', 'yellow'];
+                                            const colorPicker = document.createElement('div');
+                                            colorPicker.id = 'color-picker-row-' + row;
+                                            colorPicker.style.position = 'absolute';
+                                            colorPicker.style.display = 'flex';
+                                            colorPicker.style.gap = '5px';
+                                            colorPicker.style.padding = '5px';
+                                            colorPicker.style.backgroundColor = 'white';
+                                            colorPicker.style.border = '1px solid black';
+                                            colorPicker.style.borderRadius = '5px';
+                                            colorPicker.style.top = `${e.pageY + 20}px`;
+                                            colorPicker.style.left = `${e.pageX}px`;
+                                            colorPicker.style.zIndex = '9999';
 
-                                        colors.forEach(color => {
-                                            const option = document.createElement('div');
-                                            option.style.width = '20px';
-                                            option.style.height = '20px';
-                                            option.style.backgroundColor = color;
-                                            option.style.cursor = 'pointer';
-                                            option.onclick = () => {
-                                                if (setup.rowLabelColors[row] == color) {
-                                                    color = ''
-                                                }
-                                                const newRowLabelColors = [...setup.rowLabelColors];
-                                                newRowLabelColors[row] = color;
-                                                setSetup({ ...setup, rowLabelColors: newRowLabelColors });
-                                                document.body.removeChild(colorPicker);
-                                            };
-                                            colorPicker.appendChild(option);
-                                        });
+                                            // prevent clicks inside from bubbling
+                                            colorPicker.addEventListener('click', ev => ev.stopPropagation());
 
-                                        colorPicker.style.top = `${e.pageY + 20}px`;
-                                        colorPicker.style.left = `${e.pageX}px`;
-                                        document.body.appendChild(colorPicker);
-                                    }}
-                                >
-                                    🎨
-                                </button>
-                            </div>
-                        )}
+                                            colors.forEach(color => {
+                                                const option = document.createElement('div');
+                                                option.style.width = '20px';
+                                                option.style.height = '20px';
+                                                option.style.backgroundColor = color;
+                                                option.style.cursor = 'pointer';
+                                                option.onclick = () => {
+                                                    setSetup(prev => {
+                                                        const newRowLabelColors = [...prev.rowLabelColors];
+                                                        newRowLabelColors[row] =
+                                                            newRowLabelColors[row] === color ? '' : color;
+                                                        return { ...prev, rowLabelColors: newRowLabelColors };
+                                                    });
+                                                    document.body.removeChild(colorPicker);
+                                                };
+                                                colorPicker.appendChild(option);
+                                            });
+                                            document.body.appendChild(colorPicker);
+                                        }}
+                                    >
+                                        🎨
+                                    </button>
+                                </>
+                            )}
+                        </div>
                         {Array.from({ length: cols }, (_, col) => {
                             const ship = ships.find(s => s.row === row && s.col === col && !s.seat);
                             const occupants = ships.filter(s => s.row === row && s.col === col && s.seat >= 1);

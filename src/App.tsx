@@ -9,7 +9,8 @@ import Share from '../components/LineupPane/Share';
 import { Ship, Grid, Setup, SetupDefaults } from '../types';
 import html2canvas from 'html2canvas';
 import { cleanupShips, hasEmptyRow } from '../components/RosterPane/rosterTools';
-import { moveOrSwapCells } from '../components/LineupPane/moveOrSwapCells';
+import { moveOrSwapCells } from '../components/LineupPane/utils/moveOrSwapCells';
+import { moveOrSwapRows, swapSetupRows } from '../components/LineupPane/utils/moveOrSwapRows';
 
 const App = () => {
     const [setup, setSetup] = useState<Setup>(SetupDefaults);
@@ -86,6 +87,11 @@ const App = () => {
 
     const handleMoveCells = (from: Grid, to: Grid) => {
         setShips(prev => moveOrSwapCells(prev, from, to));
+    };
+
+    const handleMoveRows = (fromRow: number, toRow: number) => {
+        setShips(prev => moveOrSwapRows(prev, fromRow, toRow));
+        setSetup(prev => swapSetupRows(prev, fromRow, toRow));
     };
 
     const resizeLabelArrays = () => {
@@ -248,12 +254,11 @@ const App = () => {
                     <RosterPane ships={ships} setShips={setShips} setAllShips={setAllShips} />
                 </Pane>
 
-                <Pane title='Setup'>
-                    <SetupPane setup={setup} setSetup={setSetup} />
-                </Pane>
-
                 <Pane title='Lineup'>
-                    <form className='no-print'>
+
+                    <SetupPane setup={setup} setSetup={setSetup} />
+
+                    <form className='no-print form-margin-top'>
                         <input type='button' value='Add column (left)' onClick={addColLeft} disabled={cols >= 5} />
                         <input type='button' value='Add row' onClick={addRow} disabled={rows >= 50} />
                         <input type='button' value='Add column (right)' onClick={addColRight} disabled={cols >= 5} />
@@ -267,7 +272,7 @@ const App = () => {
                             <input type='button' value='No' className='modal-control' onClick={() => setClearModalOpen(false)} />
                         </div>
                     </Modal>
-                    <LineupPane setup={setup} setSetup={setSetup} ships={ships} rows={rows} cols={cols} handleClick={handleLineupClick} onMoveCells={handleMoveCells} />
+                    <LineupPane setup={setup} setSetup={setSetup} ships={ships} rows={rows} cols={cols} handleClick={handleLineupClick} onMoveCells={handleMoveCells} onMoveRows={handleMoveRows} />
 
                     <form>
                         <input type='button' className='no-print' value='Download PNG' onClick={() => capturePng()} />

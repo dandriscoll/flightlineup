@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Setup, Ship } from '../../types';
 import Tile from '../Tile';
 
@@ -7,10 +7,32 @@ interface SetupPaneProps {
     setSetup: (setup: Setup) => void;
 }
 
+const FIELDS = ['name', 'tail', 'type', 'qualification', 'squadron'] as const;
+type Field = typeof FIELDS[number];
+
+const POSITIONS = ['left', 'right', 'midTop', 'midBottom'] as const;
+type Position = typeof POSITIONS[number];
+
+const getAssignments = (s: Setup): Record<Position, Field | 'none'> => ({
+    left: s.leftBadge as Field | 'none',
+    right: s.rightBadge as Field | 'none',
+    midTop: s.row1 as Field | 'none',
+    midBottom: s.row2 as Field | 'none'
+});
+
+const setAssignments = (s: Setup, pos: Position, val: Field | 'none'): Setup => {
+    const next = { ...s };
+    if (pos === 'left') next.leftBadge = val;
+    if (pos === 'right') next.rightBadge = val;
+    if (pos === 'midTop') next.row1 = val;
+    if (pos === 'midBottom') next.row2 = val;
+    return next;
+};
+
 const SetupPane: React.FC<SetupPaneProps> = ({ setup, setSetup }) => {
     const exampleShip: Ship = {
-        name: 'Dan "Clippy" Driscoll',
-        tail: 'N9157S',
+        name: 'Example Name',
+        tail: 'N12345',
         type: 'Mooney M20M TLS Bravo',
         qualification: 'Safety Observer',
         squadron: 'Rocky Mountain',
@@ -19,100 +41,113 @@ const SetupPane: React.FC<SetupPaneProps> = ({ setup, setSetup }) => {
         seat: null
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, property: keyof Setup) => {
-        setSetup({ ...setup, [property]: e.target.value });
+    const [open, setOpen] = useState(false); // don't show settings panel initially
+
+    const assignments = getAssignments(setup);
+
+    // toggle a checkbox at (field, position). Only one selection per column
+    const toggle = (field: Field, pos: Position) => {
+        setSetup(prev => {
+            const a = getAssignments(prev);
+            const isSelected = a[pos] === field;
+            let next = { ...prev };
+
+            if (isSelected) {
+                // unassign this column
+                next = setAssignments(next, pos, 'none');
+            } else {
+                // remove this field from any other column
+                for (const p of POSITIONS) {
+                    if (a[p] === field) next = setAssignments(next, p, 'none');
+                }
+                // assign this field to the chosen column
+                next = setAssignments(next, pos, field);
+            }
+            return next;
+        });
     };
 
+    // disable unchecked boxes in a column if that column already has a selection
+    const isDisabled = (field: Field, pos: Position) => {
+        const assigned = assignments[pos];
+        return assigned !== 'none' && assigned !== field;
+    };
     return (
-        <form className='setup-pane no-print'>
-            <Tile setup={setup} ship={exampleShip} />
-            <div className='setup-inputs'>
-                <div className='setup-input'>
-                    <div className='label'>Left badge</div>
-                    <select
-                        className='setup-badge'
-                        id='setup-left'
-                        value={setup.leftBadge}
-                        aria-label='Left badge'
-                        onChange={(e) => handleInputChange(e, 'leftBadge')}>
-                            <option key='none' value='none'>Disable left badge</option>
-                            <option key='name' value='name'>Name</option>
-                            <option key='tail' value='tail'>Tail number</option>
-                            <option key='type' value='type'>Aircraft type</option>
-                            <option key='qualification' value='qualification'>Qualification level</option>
-                            <option key='squadron' value='squadron'>Mooney Caravan Squadron</option>
-                    </select>
+        <div className="setup-pane no-print">
+            <div className="preview-pane">
+                <div className="preview-header">
+                    <h3 className="preview-title">Preview</h3>
+                    <button type="button" onClick={() => setOpen(v => !v)} className="preview-settings-btn">⚙️</button>
                 </div>
-                <div className='setup-input'>
-                    <div className='setup-rows'>
-                        <div className='label'>Top row text</div>
-                        <select
-                            className='setup-row'
-                            id='setup-row1'
-                            value={setup.row1}
-                            aria-label='Row 1'
-                            onChange={(e) => handleInputChange(e, 'row1')}>
-                                <option key='none' value='none'>No text</option>
-                                <option key='name' value='name'>Name</option>
-                                <option key='tail' value='tail'>Tail number</option>
-                                <option key='type' value='type'>Aircraft type</option>
-                                <option key='qualification' value='qualification'>Qualification level</option>
-                                <option key='squadron' value='squadron'>Mooney Caravan Squadron</option>
-                        </select>
-                    </div>
-                    <div className='setup-rows'>
-                        <div className='label'>Bottom row text</div>
-                        <select
-                            className='setup-row'
-                            id='setup-row2'
-                            value={setup.row2}
-                            aria-label='Row 2'
-                            onChange={(e) => handleInputChange(e, 'row2')}>
-                                <option key='none' value='none'>No text</option>
-                                <option key='name' value='name'>Name</option>
-                                <option key='tail' value='tail'>Tail number</option>
-                                <option key='type' value='type'>Aircraft type</option>
-                                <option key='qualification' value='qualification'>Qualification level</option>
-                                <option key='squadron' value='squadron'>Mooney Caravan Squadron</option>
-                        </select>
-                    </div>
-                </div>
-                <div className='setup-input'>
-                    <div className='label'>Right badge</div>
-                    <select
-                        className='setup-badge'
-                        id='setup-right'
-                        value={setup.rightBadge}
-                        aria-label='Right badge'
-                        onChange={(e) => handleInputChange(e, 'rightBadge')}>
-                            <option key='none' value='none'>Disable left badge</option>
-                            <option key='name' value='name'>Name</option>
-                            <option key='tail' value='tail'>Tail number</option>
-                            <option key='type' value='type'>Aircraft type</option>
-                            <option key='qualification' value='qualification'>Qualification level</option>
-                            <option key='squadron' value='squadron'>Mooney Caravan Squadron</option>
-                    </select>
+                <Tile setup={setup} ship={exampleShip} />
+                <div className="preview-checkbox-row">
+                    <label>
+                        <input
+                            type="checkbox"
+                            checked={setup.occupants}
+                            onChange={(e) => setSetup({ ...setup, occupants: e.target.checked })}
+                        />
+                        {' '}Show aircraft occupants
+                    </label>
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            checked={setup.labels}
+                            onChange={(e) => setSetup({ ...setup, labels: e.target.checked })}
+                        />
+                        {' '}Set row and column labels
+                    </label>
                 </div>
             </div>
-            <div className='setup-inputs'>
-                <label>
-                    <input
-                        type='checkbox'
-                        checked={setup.occupants}
-                        onChange={(e) => setSetup({ ...setup, occupants: e.target.checked })}
-                    />
-                    Show aircraft occupants
-                </label>
-                <label>
-                    <input
-                        type='checkbox'
-                        checked={setup.labels}
-                        onChange={(e) => setSetup({ ...setup, labels: e.target.checked })}
-                    />
-                    Set row and column labels
-                </label>
-            </div>
-        </form>
+
+            {/* settings matrix */}
+            {open && (
+                <div className="settings-panel">
+                    <div className="settings-grid">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Left</th>
+                                    <th>Middle (top)</th>
+                                    <th>Middle (bottom)</th>
+                                    <th>Right</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {FIELDS.map((field) => (
+                                    <tr key={field}>
+                                        <th scope="row" className="row-label">
+                                            {field === 'qualification' ? 'Qual level' :
+                                                field === 'type' ? 'Aircraft type' :
+                                                    field === 'tail' ? 'Tail number' :
+                                                        field === 'squadron' ? 'Squadron' : 'Name'}
+                                        </th>
+
+                                        {(['left', 'midTop', 'midBottom', 'right'] as Position[]).map((pos) => {
+                                            const checked = assignments[pos] === field;
+                                            const disabled = !checked && isDisabled(field, pos);
+                                            return (
+                                                <td key={pos} className={disabled ? 'disabled' : ''}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={checked}
+                                                        disabled={disabled}
+                                                        onChange={() => toggle(field, pos)}
+                                                        aria-label={`${field} in ${pos}`}
+                                                    />
+                                                </td>
+                                            );
+                                        })}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 };
 
