@@ -55,8 +55,7 @@ const SetupPane: React.FC<SetupPaneProps> = ({ setup, setSetup }) => {
             if (isSelected) {
                 // unassign this column
                 next = setAssignments(next, pos, 'none');
-            }
-            else {
+            } else {
                 // remove this field from any other column
                 for (const p of POSITIONS) {
                     if (a[p] === field) next = setAssignments(next, p, 'none');
