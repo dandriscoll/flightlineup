@@ -60,13 +60,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Save file
     if (!is_dir($directory)) {
-        mkdir($directory, 0750, true);
+        if (!mkdir($directory, 0750, true)) {
+            http_response_code(500);
+            echo json_encode(["error" => "Failed to create directory"]);
+            exit;
+        }
     }
     
     $filepath = $directory . $basename . '.json';
-    if (file_put_contents($filepath, json_encode($data)) === false) {
+    $json_output = json_encode($data);
+    
+    if ($json_output === false) {
         http_response_code(500);
-        echo json_encode(["error" => "Failed to save"]);
+        echo json_encode(["error" => "Failed to encode JSON"]);
+        exit;
+    }
+    
+    $bytes_written = file_put_contents($filepath, $json_output);
+    if ($bytes_written === false) {
+        http_response_code(500);
+        echo json_encode(["error" => "Failed to write file"]);
         exit;
     }
     
