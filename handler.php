@@ -23,11 +23,11 @@ function isRateLimited() {
     return false;
 }
 
-if (isRateLimited()) {
-    http_response_code(429);
-    echo json_encode(["error" => "Please wait before making another request"]);
-    exit;
-}
+// if (isRateLimited()) {
+//     http_response_code(429);
+//     echo json_encode(["error" => "Please wait before making another request"]);
+//     exit;
+// }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = file_get_contents('php://input');
