@@ -9,7 +9,7 @@ $directory = __DIR__ . '/json_store/';
 
 // Simple rate limiting
 function isRateLimited() {
-    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'unknown';
     $rate_file = sys_get_temp_dir() . '/flight_' . md5($ip);
     
     if (file_exists($rate_file)) {
@@ -23,11 +23,11 @@ function isRateLimited() {
     return false;
 }
 
-// if (isRateLimited()) {
-//     http_response_code(429);
-//     echo json_encode(["error" => "Please wait before making another request"]);
-//     exit;
-// }
+if (isRateLimited()) {
+    http_response_code(429);
+    echo json_encode(["error" => "Please wait before making another request"]);
+    exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = file_get_contents('php://input');
@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     // Generate secure filename
-    $random_number = random_int(10000000, 99999999);
+    $random_number = mt_rand(10000000, 99999999);
     $name = isset($data['name']) && is_string($data['name']) ? $data['name'] : '';
     
     if ($name) {
@@ -88,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $file = $_GET['file'] ?? '';
+    $file = isset($_GET['file']) ? $_GET['file'] : '';
     
     // Basic validation
     if (!preg_match('/^[a-zA-Z0-9\-]{1,24}$/', $file)) {
