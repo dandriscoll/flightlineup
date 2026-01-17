@@ -1,10 +1,28 @@
+// App Mode Types
+export type AppMode = 'roster' | 'formation' | 'assign' | 'export';
+
+export interface ModeConfig {
+    id: AppMode;
+    label: string;
+    description: string;
+    icon: string;
+}
+
+export const AppModes: ModeConfig[] = [
+    { id: 'roster', label: 'Enter Roster', description: 'Add pilots and aircraft', icon: '📋' },
+    { id: 'formation', label: 'Lay Out Formation', description: 'Configure grid and labels', icon: '📐' },
+    { id: 'assign', label: 'Assign Ships', description: 'Drag aircraft into positions', icon: '✈️' },
+    { id: 'export', label: 'Create Printable Views', description: 'Download, print, or share', icon: '📤' }
+];
+
+// Setup Types
 export interface Setup {
     row1: string;
     row2: string;
     leftBadge: string;
     rightBadge: string;
     occupants: boolean;
-    labels: boolean
+    labels: boolean;
     columnLabels: string[];
     rowLabels: string[];
     rowLabelColors: string[];
@@ -24,6 +42,7 @@ export const SetupDefaults: Setup = {
     isDefault: true
 };
 
+// Ship Types
 export interface FormattedShip {
     row: number | null;
     col: number | null;
@@ -75,101 +94,7 @@ export interface Grid {
     seat: number | null;
 }
 
-export const TypeIcons: {make?: string, model?: string, qualification?: string, squadron?: string, filename: string}[] = [
-    { model: "M20", filename: "type-mooney-m20.png" },
-    { make: "Mooney", model: "short-body", filename: "mooney-m20-short-body.png" },
-    { make: "Mooney", model: "short body", filename: "mooney-m20-short-body.png" },
-    { make: "Mooney", model: "mid-body", filename: "mooney-m20-mid-body.png" },
-    { make: "Mooney", model: "mid body", filename: "mooney-m20-mid-body.png" },
-    { make: "Mooney", model: "long-body", filename: "mooney-m20-long-body.png" },
-    { make: "Mooney", model: "long body", filename: "mooney-m20-long-body.png" },
-    { model: "M20 150hp", filename: "mooney-m20-150.png" },
-    { model: "M20A", filename: "mooney-m20a-180.png" },
-    { model: "M20B", filename: "mooney-m20b-180.png" },
-    { model: "M20C", filename: "mooney-m20c-ranger.png" },
-    { model: "Ranger", filename: "mooney-m20c-ranger.png" },
-    { model: "M20D", filename: "mooney-m20d-master.png" },
-    { model: "M20E", filename: "mooney-m20e-super21.png" },
-    { model: "M20F", filename: "mooney-m20f-executive.png" },
-    { model: "M20G", filename: "mooney-m20g-statesman.png" },
-    { model: "M20J", filename: "mooney-m20j-201.png" },
-    { model: "201", filename: "mooney-m20j-201.png" },
-    { model: "205", filename: "mooney-m20j-205.png" },
-    { model: "Missile", filename: "mooney-m20j-missile.png" },
-    { model: "M20J 205", filename: "mooney-m20j-205.png" },
-    { model: "M20K", filename: "mooney-m20k-231.png" },
-    { model: "231", filename: "mooney-m20k-231.png" },
-    { model: "252", filename: "mooney-m20k-252.png" },
-    { model: "M20K 252", filename: "mooney-m20k-252.png" },
-    { model: "252 Encore", filename: "mooney-m20k-252encore.png" },
-    { model: "M20K 252 Encore", filename: "mooney-m20k-252encore.png" },
-    { model: "Rocket", filename: "mooney-m20k-rocket.png" },
-    { model: "305", filename: "mooney-m20k-rocket.png" },
-    { model: "M20L", filename: "mooney-m20l-pfm.png" },
-    { model: "PFM", filename: "mooney-m20l-pfm.png" },
-    { model: "M20M", filename: "mooney-m20m-tlsbravo.png" },
-    { model: "TLS", filename: "mooney-m20m-tlsbravo.png" },
-    { model: "Bravo", filename: "mooney-m20m-tlsbravo.png" },
-    { model: "M20R", filename: "mooney-m20r-ovation.png" },
-    { model: "Ovation", filename: "mooney-m20r-ovation.png" },
-    { model: "M20S", filename: "mooney-m20s-eagle.png" },
-    { model: "Eagle", filename: "mooney-m20s-eagle.png" },
-    { model: "M20TN", filename: "mooney-m20tn-acclaim.png" },
-    { model: "Acclaim", filename: "mooney-m20tn-acclaim.png" },
-    { model: "M20U", filename: "mooney-m20u-ovationultra.png" },
-    { model: "Ovation Ultra", filename: "mooney-m20u-ovationultra.png" },
-    { model: "M20V", filename: "mooney-m20v-acclaimultra.png" },
-    { model: "Acclaim Ultra", filename: "mooney-m20v-acclaimultra.png" },
-    
-    { model: "Bonanza", filename: "type-beechcraft-bonanza.png" },
-    { model: "Debonair", filename: "type-beechcraft-debonair.png" },
-    { make: "Beechcraft", model: "33", filename: "beechcraft-33-debonair.png" },
-    { make: "Beechcraft", model: "33 Bonanza", filename: "beechcraft-33-bonanza.png" },
-    { make: "Beechcraft", model: "35", filename: "beechcraft-35-bonanza.png" },
-    { make: "Beechcraft", model: "36", filename: "beechcraft-36-bonanza.png" },
-    { make: "Beech", model: "33", filename: "beechcraft-33-debonair.png" },
-    { make: "Beech", model: "33 Bonanza", filename: "beechcraft-33-bonanza.png" },
-    { make: "Beech", model: "35", filename: "beechcraft-35-bonanza.png" },
-    { make: "Beech", model: "36", filename: "beechcraft-36-bonanza.png" },
-    { model: "Baron", filename: "type-beechcraft-baron.png" },
-    { make: "Beechcraft", model: "55", filename: "beechcraft-55-baron.png" },
-    { make: "Beechcraft", model: "56", filename: "beechcraft-56-baron.png" },
-    { make: "Beechcraft", model: "58", filename: "beechcraft-58-baron.png" },
-    { make: "Beech", model: "55", filename: "beechcraft-55-baron.png" },
-    { make: "Beech", model: "56", filename: "beechcraft-56-baron.png" },
-    { make: "Beech", model: "58", filename: "beechcraft-58-baron.png" },
-    { model: "33 225hp", filename: "beechcraft-33-225.png" },
-    { model: "33 285hp", filename: "beechcraft-33-285.png" },
-    { model: "35 185hp", filename: "beechcraft-35-185.png" },
-    { model: "35 225hp", filename: "beechcraft-35-225.png" },
-    { model: "35 240hp", filename: "beechcraft-35-240.png" },
-    { model: "35 250hp", filename: "beechcraft-35-250.png" },
-    { model: "35 260hp", filename: "beechcraft-35-260.png" },
-    { model: "35 285hp", filename: "beechcraft-35-285.png" },
-    { model: "36 285hp", filename: "beechcraft-36-285.png" },
-    { model: "36 300hp", filename: "beechcraft-36-300.png" },
-    { model: "36 325hp", filename: "beechcraft-36-325.png" },
-
-    { model: "PA-24", filename: "type-piper-pa24.png" },
-    { model: "Comanche", filename: "type-piper-pa24.png" },
-    { model: "Comanche 180", filename: "piper-pa24-180.png" },
-    { model: "Comanche 250", filename: "piper-pa24-250.png" },
-    { model: "Comanche 260", filename: "piper-pa24-260.png" },
-    { model: "Comanche 400", filename: "piper-pa24-400.png" },
-
-    { model: "SR20", filename: "type-cirrus-sr20.png" },
-    { model: "SR22", filename: "type-cirrus-sr22.png" },
-    { model: "SR20", filename: "cirrus-sr20-200.png" },
-    { model: "SR20 215hp", filename: "cirrus-sr20-215.png" },
-    { model: "SR22", filename: "cirrus-sr22-310.png" },
-    { model: "SR22T", filename: "cirrus-sr22t-315.png" },
-
-    { make: "Van's", filename: "type-vans-rv.png" },
-    { make: "Vans", filename: "type-vans-rv.png" },
-    { make: "RV", filename: "type-vans-rv.png" },
-    { model: "RV", filename: "type-vans-rv.png" },
-];
-
+// Canonical Data Lists
 export const CanonicalTypes: string[] = [
     "Mooney",
     "Mooney M20A",
@@ -256,6 +181,7 @@ export const CanonicalSquadrons: string[] = [
     "Texas"
 ];
 
+// Icon System
 export const IconReplacements: { [key: string]: string } = {
     "beech": "beechcraft",
     "m20": "mooney",
@@ -367,7 +293,7 @@ export const findIcon = (name: string, type: string): string => {
 
     // Replace all items in the input name with their replacements
     Object.entries(IconReplacements).forEach(([key, value]) => {
-        n = n.split(' ').map(token => 
+        n = n.split(' ').map(token =>
             token === key ? value : token
         ).join(' ');
     });

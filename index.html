@@ -1,13 +1,29 @@
-﻿<html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Flight Lineup</title>
-    <link rel="stylesheet" href="index.css" />
-    <link href='../f/lato.css' rel='stylesheet' type='text/css' />
+    <meta name="description" content="FlightLineup - Create visual lineup diagrams for formation flying groups" />
+    <title>FlightLineup - Formation Flight Visualization</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Prevent FOUC */
+        body {
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        body.loaded {
+            opacity: 1;
+        }
+    </style>
 </head>
 <body>
     <div id="root"></div>
-    <script src="index.js"></script>
+    <script type="module" src="src/index.tsx"></script>
+    <script>
+        document.body.classList.add('loaded');
+    </script>
 </body>
 </html>

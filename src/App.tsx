@@ -1,33 +1,28 @@
-﻿import React, { useState, useEffect } from 'react';
-import Pane from '../components/Pane/Pane';
-import SetupPane from '../components/SetupPane/SetupPane';
-import RosterPane from '../components/RosterPane/RosterPane';
-import LineupPane from '../components/LineupPane/LineupPane';
-import Modal from '../components/Modal';
-import PlanePicker from '../components/LineupPane/PlanePicker';
-import Share from '../components/LineupPane/Share';
-import { Ship, Grid, Setup, SetupDefaults } from '../types';
-import html2canvas from 'html2canvas';
-import { cleanupShips, hasEmptyRow } from '../components/RosterPane/rosterTools';
-import { moveOrSwapCells } from '../components/LineupPane/utils/moveOrSwapCells';
-import { moveOrSwapRows, swapSetupRows } from '../components/LineupPane/utils/moveOrSwapRows';
+import React, { useState, useEffect } from 'react';
+import AppShell from './components/Layout/AppShell';
+import RosterMode from './components/modes/RosterMode';
+import FormationMode from './components/modes/FormationMode';
+import AssignMode from './components/modes/AssignMode';
+import ExportMode from './components/modes/ExportMode';
+import { Ship, Grid, Setup, SetupDefaults, AppMode } from '../types';
+import { cleanupShips, hasEmptyRow } from './components/shared/rosterTools';
+import { moveOrSwapCells } from './components/shared/moveOrSwapCells';
+import { moveOrSwapRows, swapSetupRows } from './components/shared/moveOrSwapRows';
 
 const App = () => {
+    const [activeMode, setActiveMode] = useState<AppMode>('roster');
     const [setup, setSetup] = useState<Setup>(SetupDefaults);
     const [ships, setShips] = useState<Ship[]>([]);
     const [rows, setRows] = useState<number>(3);
     const [cols, setCols] = useState<number>(4);
-    const [modalPickerTarget, setModalPickerTarget] = useState<Grid>(null);
-    const [lineupModalOpen, setLineupModalOpen] = useState<boolean>(false);
-    const [clearModalOpen, setClearModalOpen] = useState<boolean>(false);
-    const [shareModalOpen, setShareModalOpen] = useState<boolean>(false);
 
+    // Load shared lineup from URL parameter
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const lineupName = params.get('l');
         if (lineupName) {
             try {
-                const response = fetch(`https://adverseyaw.com/flightlineup/api/${lineupName}`).then(response => {
+                fetch(`https://adverseyaw.com/flightlineup/api/${lineupName}`).then(response => {
                     if (response.status === 200) {
                         return response.json().then(data => {
                             if (data.setup) {
@@ -36,6 +31,8 @@ const App = () => {
                             if (data.ships) {
                                 setAllShips(cleanupShips(data.ships));
                             }
+                            // Switch to export mode to show the loaded lineup
+                            setActiveMode('export');
                         });
                     }
                 });
@@ -43,7 +40,7 @@ const App = () => {
                 console.error('Failed to parse shared data:', error);
             }
 
-            // Always remove the string
+            // Remove the URL parameter
             window.history.replaceState({}, '', window.location.pathname);
         }
     }, []);
@@ -51,17 +48,7 @@ const App = () => {
     const setAllShips = (allShips: Ship[]) => {
         setShips(allShips);
         removeUnusedRowsAndColumns(allShips);
-    }
-
-    const handleLineupClick = (grid: Grid) => {
-        setModalPickerTarget(grid);
-        setLineupModalOpen(true);
-    }
-
-    const closeLineupModalPicker = () => {
-        setModalPickerTarget(null);
-        setLineupModalOpen(false);
-    }
+    };
 
     const addColLeft = () => {
         if (cols < 5) {
@@ -69,21 +56,21 @@ const App = () => {
             ships.forEach(ship => {
                 ship.col += 1;
             });
-            setShips(ships);
+            setShips([...ships]);
         }
-    }
+    };
 
     const addColRight = () => {
         if (cols < 5) {
             setCols(cols + 1);
         }
-    }
+    };
 
     const addRow = () => {
         if (rows < 50) {
             setRows(rows + 1);
         }
-    }
+    };
 
     const handleMoveCells = (from: Grid, to: Grid) => {
         setShips(prev => moveOrSwapCells(prev, from, to));
@@ -121,14 +108,7 @@ const App = () => {
         }
 
         setSetup({ ...setup, columnLabels: newColumnLabels, rowLabels: newRowLabels, rowLabelColors: newRowLabelColors });
-    }
-
-    const clearPositions = () => {
-        setShips(ships.map(ship => {
-            ship.row = ship.col = null;
-            return ship;
-        }));
-    }
+    };
 
     const removeUnusedRowsAndColumns = (s: Ship[]) => {
         const slottedShips = s.filter(ship => ship.row !== null && ship.col !== null && ship.row !== undefined && ship.col !== undefined);
@@ -164,29 +144,12 @@ const App = () => {
         setCols(maxCol + 1);
 
         setShips(s);
-    }
+    };
 
-    const capturePng = () => {
-        document.body.classList.add('no-print');
-
-        html2canvas(document.body, {
-            scrollX: 0,
-            scrollY: 0,
-            windowWidth: Math.max(document.documentElement.scrollWidth, 800),
-        }).then(c => {
-            document.body.classList.remove('no-print');
-
-            const a = document.createElement('a');
-            a.href = c.toDataURL('image/png');
-            a.download = 'lineup.png';
-            a.click();
-        });
-    }
-
+    // Persist ships to localStorage
     useEffect(() => {
         resizeLabelArrays();
 
-        // Skip if no rows, or if one empty row
         if (!ships || ships.length === 0) {
             return;
         } else if (ships.length === 1 && hasEmptyRow(ships)) {
@@ -208,12 +171,14 @@ const App = () => {
         localStorage.setItem('ships', JSON.stringify(ships));
     }, [ships]);
 
+    // Persist setup to localStorage
     useEffect(() => {
         if (setup && setup.isDefault !== true) {
             localStorage.setItem('setup', JSON.stringify(setup));
         }
     }, [setup]);
 
+    // Load from localStorage on mount
     useEffect(() => {
         const storedSetup = localStorage.getItem('setup') ?? '';
         try {
@@ -237,62 +202,68 @@ const App = () => {
         const storedShips = localStorage.getItem('ships');
         if (storedShips) {
             const roster = JSON.parse(storedShips);
-            // Only set roster if we have new format
             if (roster.length > 0 && roster[0].name) {
                 setAllShips(cleanupShips(roster));
             }
         }
     }, []);
 
+    const renderActiveMode = () => {
+        switch (activeMode) {
+            case 'roster':
+                return (
+                    <RosterMode
+                        ships={ships}
+                        setShips={setShips}
+                        setAllShips={setAllShips}
+                    />
+                );
+            case 'formation':
+                return (
+                    <FormationMode
+                        setup={setup}
+                        setSetup={setSetup}
+                        rows={rows}
+                        cols={cols}
+                        ships={ships}
+                        addColLeft={addColLeft}
+                        addColRight={addColRight}
+                        addRow={addRow}
+                        removeUnusedRowsAndColumns={removeUnusedRowsAndColumns}
+                    />
+                );
+            case 'assign':
+                return (
+                    <AssignMode
+                        setup={setup}
+                        setSetup={setSetup}
+                        ships={ships}
+                        setShips={setShips}
+                        rows={rows}
+                        cols={cols}
+                        onMoveCells={handleMoveCells}
+                        onMoveRows={handleMoveRows}
+                    />
+                );
+            case 'export':
+                return (
+                    <ExportMode
+                        setup={setup}
+                        setSetup={setSetup}
+                        ships={ships}
+                        rows={rows}
+                        cols={cols}
+                    />
+                );
+            default:
+                return null;
+        }
+    };
+
     return (
-        <>
-            <h1 className='header'>FlightLineup.com <img src='flight_lineup.png' alt='Flight Lineup logo' /></h1>
-            <div className='subtitle no-print'><b>Build a visual lineup of your formation flight.</b> Make it cool and professional. Be the envy of your friends.</div>
-
-            <div className='content'>
-                <Pane title='Roster'>
-                    <RosterPane ships={ships} setShips={setShips} setAllShips={setAllShips} />
-                </Pane>
-
-                <Pane title='Lineup'>
-
-                    <SetupPane setup={setup} setSetup={setSetup} />
-
-                    <form className='no-print form-margin-top'>
-                        <input type='button' value='Add column (left)' onClick={addColLeft} disabled={cols >= 5} />
-                        <input type='button' value='Add row' onClick={addRow} disabled={rows >= 50} />
-                        <input type='button' value='Add column (right)' onClick={addColRight} disabled={cols >= 5} />
-                        <input type='button' value='Remove unused rows and columns' onClick={() => removeUnusedRowsAndColumns(ships)} />
-                        <input type='button' value='Clear lineup' onClick={() => setClearModalOpen(true)} />
-                    </form>
-                    <Modal isOpen={clearModalOpen} setIsOpen={() => setClearModalOpen(false)} handleClick={() => setClearModalOpen(false)}>
-                        <div>
-                            <p>Are you sure you want to clear the lineup?</p>
-                            <input type='button' value='Yes' className='modal-control' onClick={() => { clearPositions(); setClearModalOpen(false); }} />
-                            <input type='button' value='No' className='modal-control' onClick={() => setClearModalOpen(false)} />
-                        </div>
-                    </Modal>
-                    <LineupPane setup={setup} setSetup={setSetup} ships={ships} rows={rows} cols={cols} handleClick={handleLineupClick} onMoveCells={handleMoveCells} onMoveRows={handleMoveRows} />
-
-                    <form>
-                        <input type='button' className='no-print' value='Download PNG' onClick={() => capturePng()} />
-                        <input type='button' className='no-print' value='Print' onClick={() => window.print()} />
-                        <input type='button' className='no-print' value='Share' onClick={() => setShareModalOpen(true)} />
-                    </form>
-                </Pane>
-            </div>
-
-            <div className='privacy no-print'>Your data is not sent anywhere. All processing and storage happens within your web browser.</div>
-            <div className='contact'>Questions? Feedback? Mail <a href='mailto:dan@adverseyaw.com'>dan@adverseyaw.com</a></div>
-
-            <Modal isOpen={lineupModalOpen} setIsOpen={closeLineupModalPicker}>
-                <PlanePicker setup={setup} grid={modalPickerTarget} signalComplete={closeLineupModalPicker} ships={ships} setShips={setShips} />
-            </Modal>
-
-            <Modal isOpen={shareModalOpen} setIsOpen={setShareModalOpen}>
-                <Share setup={setup} ships={ships} signalComplete={() => setShareModalOpen(false)} />
-            </Modal>
-        </>
+        <AppShell activeMode={activeMode} onModeChange={setActiveMode}>
+            {renderActiveMode()}
+        </AppShell>
     );
 };
 

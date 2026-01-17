@@ -1,0 +1,310 @@
+// Layout Styles for AppShell, Sidebar, and ContentPanel
+@import './variables.less';
+
+// App Shell
+.app-shell {
+    display: flex;
+    min-height: 100vh;
+    background: @color-background;
+}
+
+// Sidebar
+.sidebar {
+    width: @sidebar-width;
+    background: @color-sidebar-bg;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: @z-sticky;
+    transition: width @transition-base;
+
+    &.collapsed {
+        width: @sidebar-collapsed-width;
+
+        .sidebar-logo-text,
+        .sidebar-nav-label,
+        .sidebar-nav-description,
+        .sidebar-collapse-text {
+            display: none;
+        }
+
+        .sidebar-nav-item {
+            justify-content: center;
+            padding: @space-3;
+        }
+
+        .sidebar-nav-icon {
+            margin-right: 0;
+        }
+    }
+}
+
+.sidebar-header {
+    padding: @space-6;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: @space-3;
+    color: @color-sidebar-text-active;
+    text-decoration: none;
+
+    &-icon {
+        font-size: @font-size-2xl;
+    }
+
+    &-text {
+        font-size: @font-size-lg;
+        font-weight: @font-weight-semibold;
+        white-space: nowrap;
+    }
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: @space-4 @space-2;
+    overflow-y: auto;
+}
+
+.sidebar-nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.sidebar-nav-item {
+    display: flex;
+    align-items: flex-start;
+    gap: @space-3;
+    padding: @space-3 @space-4;
+    margin-bottom: @space-1;
+    border-radius: @radius-md;
+    color: @color-sidebar-text;
+    cursor: pointer;
+    transition: all @transition-fast;
+
+    &:hover {
+        background: @color-sidebar-hover;
+        color: @color-sidebar-text-active;
+    }
+
+    &.active {
+        background: @color-sidebar-active;
+        color: @color-sidebar-text-active;
+
+        .sidebar-nav-description {
+            color: rgba(255, 255, 255, 0.8);
+        }
+    }
+}
+
+.sidebar-nav-icon {
+    font-size: @font-size-xl;
+    flex-shrink: 0;
+    width: 24px;
+    text-align: center;
+}
+
+.sidebar-nav-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.sidebar-nav-label {
+    font-size: @font-size-sm;
+    font-weight: @font-weight-medium;
+    line-height: @line-height-tight;
+    white-space: nowrap;
+}
+
+.sidebar-nav-description {
+    font-size: @font-size-xs;
+    color: @color-text-muted;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-footer {
+    padding: @space-4;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-collapse-btn {
+    display: flex;
+    align-items: center;
+    gap: @space-2;
+    width: 100%;
+    padding: @space-2 @space-3;
+    background: transparent;
+    border: none;
+    border-radius: @radius-md;
+    color: @color-sidebar-text;
+    cursor: pointer;
+    transition: all @transition-fast;
+    font-size: @font-size-sm;
+
+    &:hover {
+        background: @color-sidebar-hover;
+        color: @color-sidebar-text-active;
+    }
+}
+
+.sidebar-collapse-icon {
+    font-size: @font-size-lg;
+    transition: transform @transition-base;
+
+    .sidebar.collapsed & {
+        transform: rotate(180deg);
+    }
+}
+
+// Content Panel
+.content-panel {
+    flex: 1;
+    margin-left: @sidebar-width;
+    min-height: 100vh;
+    transition: margin-left @transition-base;
+
+    .sidebar.collapsed + & {
+        margin-left: @sidebar-collapsed-width;
+    }
+}
+
+.content-header {
+    background: @color-surface;
+    border-bottom: 1px solid @color-border;
+    padding: @space-6 @space-8;
+    position: sticky;
+    top: 0;
+    z-index: @z-sticky - 1;
+}
+
+.content-header-inner {
+    max-width: @content-max-width;
+    margin: 0 auto;
+}
+
+.content-title {
+    font-size: @font-size-2xl;
+    font-weight: @font-weight-semibold;
+    color: @color-text-primary;
+    margin: 0 0 @space-1 0;
+}
+
+.content-description {
+    font-size: @font-size-sm;
+    color: @color-text-secondary;
+    margin: 0;
+}
+
+.content-main {
+    padding: @space-8;
+    max-width: @content-max-width;
+    margin: 0 auto;
+}
+
+// Responsive styles
+@media (max-width: @breakpoint-lg) {
+    .sidebar {
+        width: @sidebar-collapsed-width;
+
+        .sidebar-logo-text,
+        .sidebar-nav-label,
+        .sidebar-nav-description,
+        .sidebar-collapse-text {
+            display: none;
+        }
+
+        .sidebar-nav-item {
+            justify-content: center;
+            padding: @space-3;
+        }
+
+        .sidebar-nav-icon {
+            margin-right: 0;
+        }
+    }
+
+    .content-panel {
+        margin-left: @sidebar-collapsed-width;
+    }
+}
+
+@media (max-width: @breakpoint-md) {
+    .sidebar {
+        transform: translateX(-100%);
+        width: @sidebar-width;
+
+        &.mobile-open {
+            transform: translateX(0);
+        }
+
+        .sidebar-logo-text,
+        .sidebar-nav-label,
+        .sidebar-nav-description,
+        .sidebar-collapse-text {
+            display: block;
+        }
+
+        .sidebar-nav-item {
+            justify-content: flex-start;
+            padding: @space-3 @space-4;
+        }
+
+        .sidebar-nav-icon {
+            margin-right: @space-3;
+        }
+    }
+
+    .content-panel {
+        margin-left: 0;
+    }
+
+    .mobile-menu-btn {
+        display: flex;
+    }
+
+    .sidebar-overlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: @z-modal-backdrop;
+        opacity: 0;
+        visibility: hidden;
+        transition: all @transition-base;
+
+        &.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+    }
+}
+
+// Mobile menu button (hidden by default)
+.mobile-menu-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: @color-surface;
+    border: 1px solid @color-border;
+    border-radius: @radius-md;
+    cursor: pointer;
+    position: fixed;
+    top: @space-4;
+    left: @space-4;
+    z-index: @z-sticky + 1;
+
+    &:hover {
+        background: @color-surface-hover;
+    }
+}

@@ -1,8 +1,9 @@
-﻿import React from 'react';
+import React from 'react';
 import { createRoot } from 'react-dom/client';
+import App from './App';
+import '../styles/main.less';
+
 const container = document.getElementById('root');
 const root = createRoot(container!);
-import App from './App';
-import '../styles/style.less';
 
 root.render(<App />);
