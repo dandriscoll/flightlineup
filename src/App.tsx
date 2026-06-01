@@ -25,27 +25,41 @@ const App = () => {
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const lineupName = params.get('l');
-        if (lineupName) {
-            try {
-                const response = fetch(`https://adverseyaw.com/flightlineup/api/${lineupName}`).then(response => {
-                    if (response.status === 200) {
-                        return response.json().then(data => {
-                            if (data.setup) {
-                                setSetup({ ...data.setup, isDefault: false });
-                            }
-                            if (data.ships) {
-                                setAllShips(cleanupShips(data.ships));
-                            }
-                        });
-                    }
-                });
-            } catch (error) {
-                console.error('Failed to parse shared data:', error);
-            }
-
-            // Always remove the string
-            window.history.replaceState({}, '', window.location.pathname);
+        if (!lineupName) {
+            return;
         }
+
+        const applyData = (data: any) => {
+            if (data && data.setup) {
+                setSetup({ ...data.setup, isDefault: false });
+            }
+            if (data && data.ships) {
+                setAllShips(cleanupShips(data.ships));
+            }
+        };
+
+        // The share endpoint is rate limited (HTTP 429, ~2s/IP) and shared by
+        // every visitor on the same IP, so a load can transiently fail. Retry
+        // once after the cooldown before giving up.
+        const loadShared = (attempt: number) => {
+            fetch(`https://adverseyaw.com/flightlineup/api/${lineupName}`)
+                .then(response => {
+                    if (response.status === 200) {
+                        return response.json().then(applyData);
+                    }
+                    if (response.status === 429 && attempt === 0) {
+                        setTimeout(() => loadShared(attempt + 1), 2500);
+                    }
+                })
+                .catch(error => {
+                    console.error('Failed to load shared data:', error);
+                });
+        };
+
+        loadShared(0);
+
+        // Always remove the string
+        window.history.replaceState({}, '', window.location.pathname);
     }, []);
 
     const setAllShips = (allShips: Ship[]) => {

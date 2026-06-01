@@ -25,6 +25,9 @@ const Share: React.FC<ShareProps> = ({ setup, ships, signalComplete }) => {
         })
         .then(response => response.json())
         .then(data => {
+            if (!data || !data.filename) {
+                throw new Error(data && data.error ? data.error : 'Failed to generate share link');
+            }
             setLink(`https://adverseyaw.com/flightlineup/?l=${data.filename}`);
             setInProgress(false);
         })
