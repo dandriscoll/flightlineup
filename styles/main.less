@@ -1155,6 +1155,31 @@ body.print-preview {
 .gap-2 { gap: @space-2; }
 .gap-4 { gap: @space-4; }
 
+.load-error-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: @space-4;
+    margin-bottom: @space-6;
+    padding: @space-3 @space-4;
+    background: lighten(@color-error, 32%);
+    border: 1px solid @color-error;
+    border-radius: @radius-md;
+    color: darken(@color-error, 20%);
+    font-size: @font-size-sm;
+}
+
+.load-error-banner-dismiss {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: @font-size-xl;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 @space-2;
+}
+
 .hidden { display: none; }
 .sr-only {
     position: absolute;

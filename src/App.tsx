@@ -15,34 +15,55 @@ const App = () => {
     const [ships, setShips] = useState<Ship[]>([]);
     const [rows, setRows] = useState<number>(3);
     const [cols, setCols] = useState<number>(4);
+    const [loadError, setLoadError] = useState<string>('');
 
     // Load shared lineup from URL parameter
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const lineupName = params.get('l');
-        if (lineupName) {
-            try {
-                fetch(`https://adverseyaw.com/flightlineup/api/${lineupName}`).then(response => {
-                    if (response.status === 200) {
-                        return response.json().then(data => {
-                            if (data.setup) {
-                                setSetup({ ...data.setup, isDefault: false });
-                            }
-                            if (data.ships) {
-                                setAllShips(cleanupShips(data.ships));
-                            }
-                            // Switch to export mode to show the loaded lineup
-                            setActiveMode('export');
-                        });
-                    }
-                });
-            } catch (error) {
-                console.error('Failed to parse shared data:', error);
-            }
-
-            // Remove the URL parameter
-            window.history.replaceState({}, '', window.location.pathname);
+        if (!lineupName) {
+            return;
         }
+
+        const applyData = (data: any) => {
+            if (data && data.setup) {
+                setSetup({ ...data.setup, isDefault: false });
+            }
+            if (data && data.ships) {
+                setAllShips(cleanupShips(data.ships));
+            }
+            // Switch to export mode to show the loaded lineup
+            setActiveMode('export');
+        };
+
+        // The share endpoint is rate limited (HTTP 429, ~2s/IP) and shared by
+        // every visitor on the same IP, so a load can transiently fail. Retry
+        // once after the cooldown before surfacing an error.
+        const loadShared = (attempt: number) => {
+            fetch(`https://adverseyaw.com/flightlineup/api/${lineupName}`)
+                .then(response => {
+                    if (response.status === 200) {
+                        return response.json().then(applyData);
+                    }
+                    if (response.status === 429 && attempt === 0) {
+                        setTimeout(() => loadShared(attempt + 1), 2500);
+                        return;
+                    }
+                    if (response.status === 404) {
+                        setLoadError('That shared lineup could not be found — the link may be incorrect or expired.');
+                        return;
+                    }
+                    setLoadError('Could not load the shared lineup. Please try opening the link again in a moment.');
+                })
+                .catch(() => {
+                    setLoadError('Could not load the shared lineup. Please check your connection and try again.');
+                });
+        };
+
+        loadShared(0);
+
+        // Remove the URL parameter
+        window.history.replaceState({}, '', window.location.pathname);
     }, []);
 
     const setAllShips = (allShips: Ship[]) => {
@@ -262,6 +283,19 @@ const App = () => {
 
     return (
         <AppShell activeMode={activeMode} onModeChange={setActiveMode}>
+            {loadError && (
+                <div className="load-error-banner" role="alert">
+                    <span>{loadError}</span>
+                    <button
+                        type="button"
+                        className="load-error-banner-dismiss"
+                        aria-label="Dismiss"
+                        onClick={() => setLoadError('')}
+                    >
+                        ×
+                    </button>
+                </div>
+            )}
             {renderActiveMode()}
         </AppShell>
     );

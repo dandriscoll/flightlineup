@@ -67,6 +67,9 @@ const ExportMode: React.FC<ExportModeProps> = ({
         })
             .then(response => response.json())
             .then(data => {
+                if (!data || !data.filename) {
+                    throw new Error(data && data.error ? data.error : 'Failed to generate share link');
+                }
                 setShareLink(`https://adverseyaw.com/flightlineup/?l=${data.filename}`);
                 setShareInProgress(false);
             })
