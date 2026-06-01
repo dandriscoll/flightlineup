@@ -23,7 +23,9 @@ function isRateLimited() {
     return false;
 }
 
-if (isRateLimited()) {
+// Only rate limit writes (POST). Reads (GET) are idempotent and shared by
+// every visitor behind the same IP, so they must never be throttled.
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isRateLimited()) {
     http_response_code(429);
     echo json_encode(["error" => "Please wait before making another request"]);
     exit;
