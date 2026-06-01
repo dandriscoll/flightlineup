@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = file_get_contents('php://input');
     
     // Basic validation
-    if (empty($input) || strlen($input) > 10000) {
+    if (empty($input) || strlen($input) > 100000) {
         http_response_code(400);
         echo json_encode(["error" => "Invalid input size"]);
         exit;
