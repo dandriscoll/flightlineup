@@ -24,7 +24,7 @@ const parseCsvRow = (row: string): string[] => {
     }
     
     values.push(currentValue.trim());
-    return values;
+    return values.map(value => value.replace(/&quot;/g, '"'));
 }
 
 const parseCsvRoster = (csv: string): Ship[] => {
@@ -86,32 +86,29 @@ const parseCsvRoster = (csv: string): Ship[] => {
     }
 }
 
+// Each field maps to a list of accepted header names (already lowercased).
+// The first matching column wins, so list the more specific names first.
+const HEADER_ALIASES: { [field: string]: string[] } = {
+    name: ['name', 'full name', 'fullname'],
+    tail: ['tail', 'tail #', 'tail#', 'nnumber', 'n-number', 'n number'],
+    type: ['type', 'aircraftmodel', 'aircraft model'],
+    qualification: ['qualification', 'certification'],
+    squadron: ['squadron'],
+    row: ['row'],
+    col: ['col'],
+    seat: ['seat']
+};
+
 const parseHeader = (row: string[]): any => {
     row = row.map(element => element.trim().toLowerCase());
 
-    if (row.indexOf('name') != -1) {
-        return {
-            name: row.indexOf('name'),
-            tail: row.indexOf('tail'),
-            type: row.indexOf('type'),
-            qualification: row.indexOf('qualification'),
-            squadron: row.indexOf('squadron'),
-            row: row.indexOf('row'),
-            col: row.indexOf('col'),
-            seat: row.indexOf('seat')
-        };
-    } else if (row.indexOf('full name') != -1) {
-        return {
-            name: row.indexOf('full name'),
-            tail: row.indexOf('tail #'),
-            type: row.indexOf('aircraftmodel'),
-            qualification: row.indexOf('certification'),
-            squadron: -1,
-            row: -1,
-            col: -1,
-            seat: -1
-        };
+    const headerMap: any = {};
+    for (const field in HEADER_ALIASES) {
+        headerMap[field] = HEADER_ALIASES[field]
+            .map(alias => row.indexOf(alias))
+            .find(index => index !== -1) ?? -1;
     }
+    return headerMap;
 }
 
 const parseQualificationText = (text: string | null): string | null => {

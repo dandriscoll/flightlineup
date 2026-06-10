@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Modal from '../Modal.tsx';
 import { Ship, CanonicalTypes, CanonicalQualifications, CanonicalSquadrons } from '../../types';
 import { generateCsv, parseCsvRoster, addEmptyRow, hasEmptyRow } from './rosterTools';
+import { isXlsx, xlsxToCsv } from './xlsx';
 
 interface RosterPaneProps {
     ships: Ship[];
@@ -31,19 +32,27 @@ const RosterPane: React.FC<RosterPaneProps> = ({ ships, setShips, setAllShips })
     const importCsv = () => {
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
-        fileInput.accept = '.csv';
+        fileInput.accept = '.csv,.xlsx';
         fileInput.addEventListener('change', (e) => {
             const file = (e.target as HTMLInputElement).files?.[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = (event) => {
-                    const csv = event.target?.result as string;
-                    if (csv) {
-                        const newShips = parseCsvRoster(csv);
-                        setAllShips(newShips);
+                reader.onload = async (event) => {
+                    const buffer = event.target?.result as ArrayBuffer;
+                    if (!buffer) return;
+                    try {
+                        // Some files arrive as .xlsx renamed to .csv, so detect by
+                        // content (the ZIP magic bytes) rather than by extension.
+                        const csv = isXlsx(new Uint8Array(buffer))
+                            ? await xlsxToCsv(buffer)
+                            : new TextDecoder().decode(buffer);
+                        setAllShips(parseCsvRoster(csv));
+                    } catch (err) {
+                        console.error('Failed to import roster file', err);
+                        alert('Could not read that file. Please use a CSV or Excel (.xlsx) roster.');
                     }
                 };
-                reader.readAsText(file);
+                reader.readAsArrayBuffer(file);
             }
         });
 
@@ -181,7 +190,7 @@ const RosterPane: React.FC<RosterPaneProps> = ({ ships, setShips, setAllShips })
                 <tr>
                     <td colSpan={5}>
                         <input type='button' onClick={() => addRow()} value='Add row' />
-                        <input type='button' onClick={() => importCsv()} value='Import CSV' />
+                        <input type='button' onClick={() => importCsv()} value='Upload CSV/XLSX' />
                         <input type='button' onClick={() => exportCsv()} value='Export CSV' />
                         <input type='button' onClick={() => setClearModalOpen(true)} value='Clear roster' />
                     </td>
